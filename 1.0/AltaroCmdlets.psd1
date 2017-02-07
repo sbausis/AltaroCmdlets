@@ -81,7 +81,7 @@ AliasesToExport = '*'
 # ModuleList = @()
 
 # List of all files packaged with this module
-FileList = @('AltaroCmdlets.psm1','OP AltaroCmdlets.psd1')
+FileList = @('AltaroCmdlets.psm1','AltaroCmdlets.psd1')
 
 # Private data to pass to the module specified in RootModule/ModuleToProcess
 # PrivateData = ''
