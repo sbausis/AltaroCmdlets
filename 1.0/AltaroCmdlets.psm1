@@ -41,6 +41,7 @@ function ManageService($ServiceName="Altaro VM Backup API Service", $Task="start
 				Write-Host "Service <$ServiceName> is already set to Disabled ..."
 			}
 			$result = $true
+			$Task = "stop"
 		}
 		
 		if ($Task -eq "auto") {
