@@ -19,59 +19,75 @@
 
 #region Public Functions
 
-function Altaro-APIService($Task="start") {
-	
+function ManageService($ServiceName="Altaro VM Backup API Service", $Task="start") {
 	$result = $false
 	Try {
+		$Service = Get-Service $ServiceName -ErrorAction SilentlyContinue
+		if (!($Service)) {
+			throw "No Service <$ServiceName> found .!."
+		} #else {
+		#	Write-Host "Found Service <$ServiceName> ..."
+		#}
+		if (($Service.StartType -eq "Disabled") -And (($Task -eq "restart") -Or ($Task -eq "start"))) {
+			Write-Host "Set Service <$ServiceName> to start manually since its disabled now .!."
+			$Service | Set-Service -StartupType Manual
+		}
 		
-		$AltaroAPIService = Get-Service "Altaro VM Backup API Service" -ErrorAction SilentlyContinue
-		if (!($AltaroAPIService)) {
-			throw "No Altaro API Service found .!."
-		} else {
-			Write-Host "Found Altaro API Service ..."
+		if ($Task -eq "disable") {
+			if (!($Service.StartType -eq "Disabled")) {
+				Write-Host "Set Service <$ServiceName> to Disabled .!."
+				$Service | Set-Service -StartupType Disabled
+			} else {
+				Write-Host "Service <$ServiceName> is already set to Disabled ..."
+			}
+			$result = $true
 		}
 		
 		if ($Task -eq "auto") {
-			if (!($AltaroAPIService.StartType -eq "Automatic")) {
-				Write-Host "Set Altaro API Service to start automatically .!."
-				$AltaroAPIService | Set-Service -StartupType Automatic
+			if (!($Service.StartType -eq "Automatic")) {
+				Write-Host "Set Service <$ServiceName> to start automatically .!."
+				$Service | Set-Service -StartupType Automatic
 			} else {
-				Write-Host "Altaro API Service is already set to start automatically ..."
+				Write-Host "Service <$ServiceName> is already set to start automatically ..."
 			}
 			$result = $true
 			$Task = "start"
 		}
 		
 		if (($Task -eq "stop") -Or ($Task -eq "restart")) {
-			if (($AltaroAPIService.Status -eq "Running")) {
-				Write-Host "Stop Altaro API Service .!."
-				Stop-Service "Altaro VM Backup API Service"
-				sleep 1
+			if (($Service.Status -eq "Running")) {
+				Write-Host "Stop Service <$ServiceName> .!."
+				Stop-Service $ServiceName
+				#sleep 1
 			} else {
-				Write-Host "Altaro API Service is already stopped ..."
+				Write-Host "Service <$ServiceName> is already stopped ..."
 			}
 			if ($Task -eq "restart") {
-				$AltaroAPIService = Get-Service "Altaro VM Backup API Service" -ErrorAction SilentlyContinue
+				$Service = Get-Service $ServiceName -ErrorAction SilentlyContinue
 				$Task = "start"
 			}
 			$result = $true
 		}
 		
 		if ($Task -eq "start") {
-			if (!($AltaroAPIService.Status -eq "Running")) {
-				Write-Host "Start Altaro API Service .!."
-				Start-Service "Altaro VM Backup API Service"
+			if (!($Service.Status -eq "Running")) {
+				Write-Host "Start Service <$ServiceName> .!."
+				Start-Service $ServiceName
 			} else {
-				Write-Host "Altaro API Service is already running ..."
+				Write-Host "Service <$ServiceName> is already running ..."
 			}
 			$result = $true
 		}
 		
 	} Catch {
-		Write-Warning "Altaro-APIService failed .!."
+		Write-Warning "failed .!."
 		#exit 1
 	}
 	return $result
+}
+
+function Altaro-APIService($Task="start") {
+	return ManageService -ServiceName "Altaro VM Backup API Service" -Task $Task
 }
 
 function Altaro-CheckAPIService() {
